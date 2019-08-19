@@ -58,6 +58,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class AtomixClusterManager implements ClusterManager {
+  private final static int DEFAULT_CACHE_SIZE = 64 * 1024 * 1024;
   private final Atomix atomix;
   private final ThreadContext context;
   private NodeListener listener;
@@ -120,6 +121,8 @@ public class AtomixClusterManager implements ClusterManager {
   public <K, V> void getAsyncMultiMap(String name, Handler<AsyncResult<AsyncMultiMap<K, V>>> handler) {
     atomix.<K, V>atomicMultimapBuilder(name)
         .withSerializer(createSerializer())
+				.withCacheEnabled(true)
+				.withCacheSize(DEFAULT_CACHE_SIZE)
         .getAsync()
         .whenComplete(VertxFutures.convertHandler(
             handler, map -> new AtomixAsyncMultiMap<>(vertx, map.async()), vertx.getOrCreateContext()));
